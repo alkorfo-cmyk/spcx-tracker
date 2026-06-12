@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
-import { HOLDINGS, MAIN_FEE_RATE, AARON_FEE_RATE, AARON_NAME, IPO_PRICE, SHARES_OUTSTANDING } from "./holdings.js";
+import { HOLDINGS, MAIN_FEE_RATE, AARON_FEE_RATE, AARON_NAME, IPO_PRICE, SHARES_OUTSTANDING,
+  ENTRY_2020, VAL_BASE_B, IPO_DATE, VALUATION_HISTORY } from "./holdings.js";
 
 const C = {
   bg: "#0A0E1A", panel: "#10162A", panel2: "#0C1120", line: "#1C2742", line2: "#2A3656",
@@ -40,13 +41,16 @@ function compute(holding, price) {
   return { ...holding, price, marketValue, profit, feeMain, feeAaron, fee, netValue, netProfit, multiple };
 }
 
-function ChartTooltip({ active, payload }) {
+function ChartTooltip({ active, payload, longRange }) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
+  const when = longRange
+    ? new Date(d.t).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    : hhmm(d.t);
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.line2}`, borderRadius: 8, padding: "8px 10px", fontFamily: MONO }}>
       <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{usd(d.p, 2)}</div>
-      <div style={{ color: C.faint, fontSize: 10.5, marginTop: 2 }}>{hhmm(d.t)}</div>
+      <div style={{ color: C.faint, fontSize: 10.5, marginTop: 2 }}>{when}{d.tag ? ` · ${d.tag}` : ""}</div>
     </div>
   );
 }
@@ -62,6 +66,7 @@ export default function App() {
   const [lastFetched, setLastFetched] = useState(null);
   const [auto, setAuto] = useState(false);
   const [manual, setManual] = useState("");
+  const [timeframe, setTimeframe] = useState("1D"); // "1D" | "MAX"
   const [selected, setSelected] = useState(null);
   const timer = useRef(null);
 
@@ -173,6 +178,24 @@ export default function App() {
   const dChange = price - refClose;
   const dPct = refClose ? (dChange / refClose) * 100 : 0;
   const up = dChange >= 0;
+
+  // "Since 2020" series: April 2020 entry → SpaceX private valuations (scaled to
+  // the entry price) → the real $135 IPO → live price. Pre-IPO points are not
+  // market prices; they trace the implied value of the holding from funding rounds.
+  const historical = useMemo(() => {
+    const base = ENTRY_2020.price;
+    const pts = [{ t: Date.parse(ENTRY_2020.date), p: base, tag: "Apr 2020 entry" }];
+    for (const m of VALUATION_HISTORY) {
+      pts.push({ t: Date.parse(m.date), p: +(base * (m.valB / VAL_BASE_B)).toFixed(2), tag: `~$${m.valB}B valuation` });
+    }
+    pts.push({ t: Date.parse(IPO_DATE), p: IPO_PRICE, tag: "IPO $135" });
+    pts.push({ t: Date.now(), p: price, tag: "now" });
+    return pts;
+  }, [price]);
+
+  const showMax = timeframe === "MAX";
+  const chartData = showMax ? historical : points;
+  const hasChart = showMax || points.length > 1;
 
   const dayMetrics = [
     { l: "Open", v: usd(meta.open, 2) },
@@ -293,16 +316,26 @@ export default function App() {
         {/* PRICE CHART + DAY METRICS */}
         <div style={{ marginTop: 14, border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden", background: C.panel }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 18px", borderBottom: `1px solid ${C.line}` }}>
-            <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: C.dim }}>SPCX · INTRADAY</span>
-            <span style={{ fontFamily: MONO, fontSize: 10.5, color: C.faint }}>
-              {points.length > 1 ? `${points.length} points` : "building live"}
+            <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: C.dim }}>
+              SPCX · {showMax ? "SINCE 2020" : "INTRADAY"}
             </span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[["1D", "1D"], ["MAX", "Since 2020"]].map(([key, label]) => (
+                <button key={key} className="btn" onClick={() => setTimeframe(key)}
+                  style={{ padding: "5px 11px", fontSize: 11, fontFamily: MONO, fontWeight: 600,
+                    borderColor: timeframe === key ? C.accent : C.line2,
+                    color: timeframe === key ? C.text : C.faint,
+                    background: timeframe === key ? "#141b32" : C.panel }}>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div style={{ padding: "12px 10px 4px" }}>
-            {points.length > 1 ? (
+            {hasChart ? (
               <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={points} margin={{ top: 10, right: 16, left: 4, bottom: 4 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 16, left: 4, bottom: 4 }}>
                   <defs>
                     <linearGradient id="spcxFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={C.gain} stopOpacity={0.35} />
@@ -311,14 +344,16 @@ export default function App() {
                   </defs>
                   <CartesianGrid stroke={C.line} strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="t" type="number" scale="time" domain={["dataMin", "dataMax"]}
-                    tickFormatter={hhmm} minTickGap={48}
+                    tickFormatter={showMax ? (t) => new Date(t).getFullYear() : hhmm} minTickGap={showMax ? 56 : 48}
                     tick={{ fill: C.faint, fontSize: 10, fontFamily: MONO }} stroke={C.line} />
                   <YAxis domain={["auto", "auto"]} width={50} tickFormatter={(v) => "$" + v.toFixed(0)}
                     tick={{ fill: C.faint, fontSize: 10, fontFamily: MONO }} stroke={C.line} />
-                  <ReferenceLine y={refClose} stroke={C.faint} strokeDasharray="4 4"
-                    label={{ value: `prev close ${usd(refClose, 2)}`, fill: C.faint, fontSize: 10, position: "insideBottomRight" }} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: C.line2 }} />
-                  <Area type="monotone" dataKey="p" stroke={C.gain} strokeWidth={2} fill="url(#spcxFill)" dot={false} isAnimationActive={false} />
+                  <ReferenceLine y={showMax ? ENTRY_2020.price : refClose} stroke={C.faint} strokeDasharray="4 4"
+                    label={{ value: showMax ? `Apr 2020 entry ${usd(ENTRY_2020.price, 2)}` : `prev close ${usd(refClose, 2)}`,
+                      fill: C.faint, fontSize: 10, position: showMax ? "insideTopLeft" : "insideBottomRight" }} />
+                  <Tooltip content={(p) => <ChartTooltip {...p} longRange={showMax} />} cursor={{ stroke: C.line2 }} />
+                  <Area type="monotone" dataKey="p" stroke={C.gain} strokeWidth={2} fill="url(#spcxFill)"
+                    dot={showMax ? { r: 2.5, fill: C.gain, strokeWidth: 0 } : false} isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -326,6 +361,12 @@ export default function App() {
                 <div style={{ fontFamily: MONO, fontSize: 28, color: C.dim, marginBottom: 10 }}>—</div>
                 The chart fills in as the price updates. Turn on <strong style={{ color: C.dim }}>&nbsp;Auto-refresh&nbsp;</strong> to build it
                 automatically, or connect an intraday feed (see README) to backfill the full trading day on load.
+              </div>
+            )}
+            {showMax && (
+              <div style={{ padding: "2px 12px 4px", fontSize: 10.5, lineHeight: 1.55, color: C.faint, fontFamily: SANS }}>
+                Pre-IPO points trace SpaceX's private funding-round valuations scaled to your April 2020 entry — not public
+                market prices. SPCX began trading June 12, 2026.
               </div>
             )}
           </div>
@@ -480,8 +521,9 @@ export default function App() {
             from the 1.5% — it pays 20% only. Return is net profit ÷ invested.
           </p>
           <p style={{ margin: "0 0 6px" }}>
-            <strong style={{ color: C.dim }}>Chart.</strong> Builds live from each price update and is saved per day. Connect an
-            intraday feed (optional, see README) to backfill the full trading day automatically.
+            <strong style={{ color: C.dim }}>Chart.</strong> "1D" builds live from each price update (saved per day; connect an
+            intraday feed to backfill the trading day). "Since 2020" traces your holding from the April 2020 entry through
+            SpaceX's private valuations to the IPO and live price — pre-IPO points are valuation-based, not market prices.
           </p>
           <p style={{ margin: 0 }}>
             <strong style={{ color: C.dim }}>Price &amp; metrics.</strong> Fetched from a market-data provider via this app's own

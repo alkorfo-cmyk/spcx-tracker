@@ -14,6 +14,25 @@ export const IPO_PRICE = 135.0;       // baseline price at IPO (June 12, 2026)
 // Market cap is computed as price × this, so it always matches the live price.
 export const SHARES_OUTSTANDING = 13.076e9;
 
+// ── Long-term ("Since 2020") chart anchors ────────────────────────────────────
+// SPCX did NOT trade publicly before the June 12, 2026 IPO. The pre-IPO curve is
+// built from SpaceX's documented private funding-round valuations, scaled to the
+// syndicate's April 2020 entry price — so it passes through the real $135 IPO.
+export const ENTRY_2020 = { date: "2020-04-01", price: 6.06 }; // syndicate cost basis
+export const VAL_BASE_B = 36;   // SpaceX ≈ $36B valuation around April 2020
+export const IPO_DATE = "2026-06-12";
+export const VALUATION_HISTORY = [ // date → SpaceX post-money valuation ($B)
+  { date: "2020-08-01", valB: 46 },
+  { date: "2021-02-01", valB: 74 },
+  { date: "2021-10-01", valB: 100 },
+  { date: "2022-06-01", valB: 127 },
+  { date: "2023-01-01", valB: 137 },
+  { date: "2024-06-01", valB: 210 },
+  { date: "2024-12-01", valB: 350 },
+  { date: "2025-07-01", valB: 400 },
+  { date: "2025-12-01", valB: 800 },
+];
+
 export const HOLDINGS = [
   { name: "Yossi Pinson", shares: 9935, invested: 60194.0 },
   { name: "Moshe Belinow — 1st", shares: 3400, invested: 20599.82 }, // includes Zalman Korf's 150 sh / $908.82, acquired from him
