@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
-import { HOLDINGS, MAIN_FEE_RATE, AARON_FEE_RATE, AARON_NAME, IPO_PRICE } from "./holdings.js";
+import { HOLDINGS, MAIN_FEE_RATE, AARON_FEE_RATE, AARON_NAME, IPO_PRICE, SHARES_OUTSTANDING } from "./holdings.js";
 
 const C = {
   bg: "#0A0E1A", panel: "#10162A", panel2: "#0C1120", line: "#1C2742", line2: "#2A3656",
@@ -179,7 +179,7 @@ export default function App() {
     { l: "High", v: usd(meta.high, 2) },
     { l: "Low", v: usd(meta.low, 2) },
     { l: "Prev close", v: usd(refClose, 2) },
-    { l: "Mkt cap", v: fmtCap(meta.marketCap) },
+    { l: "Mkt cap", v: fmtCap(SHARES_OUTSTANDING * price) },
     { l: "P/E ratio", v: meta.pe != null && isFinite(meta.pe) ? Number(meta.pe).toFixed(2) : "—" },
     { l: "52-wk high", v: usd(meta.week52High ?? meta.high, 2) },
     { l: "52-wk low", v: usd(meta.week52Low ?? meta.low, 2) },

@@ -10,6 +10,10 @@ export const AARON_FEE_RATE = 0.015;  // 1.5% to Aaron Wolko
 export const AARON_NAME = "Aaron Wolko";
 export const IPO_PRICE = 135.0;       // baseline price at IPO (June 12, 2026)
 
+// Total shares outstanding (~13.076B), per FactSet and SpaceX's S-1 filing.
+// Market cap is computed as price × this, so it always matches the live price.
+export const SHARES_OUTSTANDING = 13.076e9;
+
 export const HOLDINGS = [
   { name: "Yossi Pinson", shares: 9935, invested: 60194.0 },
   { name: "Moshe Belinow — 1st", shares: 3400, invested: 20599.82 }, // includes Zalman Korf's 150 sh / $908.82, acquired from him
