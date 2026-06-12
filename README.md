@@ -76,3 +76,14 @@ simple access check. Ask if you'd like that added.
 - Totals are computed once per holder, correcting the original spreadsheet's
   grand-total row (it double-counted Moshe Belinow's subtotal).
 - Prices may be delayed relative to the exchange; verify against your broker before acting.
+
+## The intraday chart
+
+The dashboard shows a live SPCX chart plus day stats (open, high, low, prev close,
+market cap, P/E, 52-week range). The metrics come straight from the live quote.
+
+The chart draws **live** — it adds a point on every price update and saves the day's
+points in your browser, so it keeps building across reloads (turn on Auto-refresh to
+fill it automatically). To backfill the **entire trading day** on first load, add the
+optional `TWELVEDATA_API_KEY` (free at https://twelvedata.com) in your host's
+environment variables and redeploy. No key = live-building chart, no errors.
