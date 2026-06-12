@@ -241,12 +241,12 @@ export default function App() {
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 30, alignItems: "flex-end", marginBottom: 24 }}>
                   <div>
-                    <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 1.5, color: C.dim, marginBottom: 7 }}>MARKET VALUE</div>
-                    <div style={{ fontFamily: MONO, fontSize: 42, fontWeight: 600, lineHeight: 1, color: C.gain, letterSpacing: -1 }} className="tnum">{usd(s.marketValue)}</div>
+                    <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 1.5, color: C.dim, marginBottom: 7 }}>NET AFTER FEE</div>
+                    <div style={{ fontFamily: MONO, fontSize: 42, fontWeight: 600, lineHeight: 1, color: C.gain, letterSpacing: -1 }} className="tnum">{usd(s.netValue)}</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 1.5, color: C.dim, marginBottom: 7 }}>NET AFTER FEE</div>
-                    <div style={{ fontFamily: MONO, fontSize: 27, fontWeight: 600, lineHeight: 1.1, color: C.text }} className="tnum">{usd(s.netValue)}</div>
+                    <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 1.5, color: C.dim, marginBottom: 7 }}>MARKET VALUE</div>
+                    <div style={{ fontFamily: MONO, fontSize: 27, fontWeight: 600, lineHeight: 1.1, color: C.text }} className="tnum">{usd(s.marketValue)}</div>
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(148px,1fr))", gap: 12 }}>
