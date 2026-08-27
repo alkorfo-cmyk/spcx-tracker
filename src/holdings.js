@@ -4,15 +4,18 @@
 // Fees on each holder's gross profit:
 //   • 20.0% to the syndicate (main fee)
 //   • 1.5% to Aaron Wolko (tracked separately)
-// Moshe Belinow's 2nd purchase is exempt from the 1.5% — it pays 20% only (noAaron).
+// Fees on each holder's gross profit: 20% to the syndicate + 1.5% to Aaron Wolko.
 export const MAIN_FEE_RATE = 0.20;    // 20% main fee
 export const AARON_FEE_RATE = 0.015;  // 1.5% to Aaron Wolko
 export const AARON_NAME = "Aaron Wolko";
 export const IPO_PRICE = 135.0;       // baseline price at IPO (June 12, 2026)
 
-// Total shares outstanding (~13.076B), per FactSet and SpaceX's S-1 filing.
+// Total shares outstanding, per SpaceX filings and reporting (as of Aug 2026).
+// Updated from the ~13.076B IPO-day count to reflect dilution since: ~13.18B by
+// mid-August plus ~391M shares issued in the Aug 14, 2026 Cursor/Anysphere
+// acquisition (fully diluted, incl. options/RSUs, is ~13.65B).
 // Market cap is computed as price × this, so it always matches the live price.
-export const SHARES_OUTSTANDING = 13.076e9;
+export const SHARES_OUTSTANDING = 13.57e9;
 
 // ── Long-term ("Since 2020") chart anchors ────────────────────────────────────
 // SPCX did NOT trade publicly before the June 12, 2026 IPO. The pre-IPO curve is
@@ -36,7 +39,6 @@ export const VALUATION_HISTORY = [ // date → SpaceX post-money valuation ($B)
 export const HOLDINGS = [
   { name: "Yossi Pinson", shares: 9935, invested: 60194.0 },
   { name: "Moshe Belinow — 1st", shares: 3400, invested: 20599.82 }, // includes Zalman Korf's 150 sh / $908.82, acquired from him
-  { name: "Moshe Belinow — 2nd", shares: 2917.8338, invested: 25000.0, noAaron: true },
   { name: "Ta", shares: 800, invested: 4847.0 },
   { name: "Mushky Korf", shares: 600, invested: 3635.28 },
   { name: "AK", shares: 500, invested: 3029.0 },
